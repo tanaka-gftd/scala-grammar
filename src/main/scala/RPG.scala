@@ -47,7 +47,7 @@ object RPG extends App {
     //戦う相手として、monsters(Vector)の先頭のデータを抽出
     val monster = monsters.head
 
-    //scala.io.StdIn.readLine...scalaで1行読み込む標準入力
+    //scala.io.StdIn.readLine...Scalaで1行読み込む標準入力
     //readLine()に引数として文字列を渡すと、その文字列がコンソールに表示される(この場合入力されるのは、表示された文字列以降の文字)
     val input = scala.io.StdIn.readLine("【選択】: 攻撃[1] or 逃走[0] >")
 
@@ -161,7 +161,7 @@ class Hero(_hitPoint: Int, _attackDamage: Int) extends Creature(_hitPoint, _atta
   /*オーバーライドとオーバーロードの混同に注意(オーバーロード...引数の数や型が異なる、同じ名前のメソッドを複数用意すること)*/
   /*
     Scalaにおける全てのclassはAnyRefクラスを暗黙的に継承している。(AnyRef型は全ての参照型の親元)
-    また、scalaのAnyRefクラスの実体はJavaのObjectクラスに該当するので、JavaのObjectクラスのメソッドを呼び出せる。
+    また、ScalaのAnyRefクラスの実体はJavaのObjectクラスに該当するので、JavaのObjectクラスのメソッドを呼び出せる。
     以上をより、ここでオーバーライドしている toStringメソッドは、元々はJavaのObjectクラスで定義されたメソッドである。
 
     JavaのObjectクラスのtoStringメソッド：

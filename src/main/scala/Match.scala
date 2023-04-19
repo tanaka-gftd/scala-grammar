@@ -1,4 +1,4 @@
-/* scalaでのパターンマッチの学習 */
+/* Scalaでのパターンマッチの学習 */
 
 
 object Match {
@@ -84,7 +84,7 @@ object Match {
   def patternMatchType(x: Any): Unit = {  //Any型は、全ての派生元となる型
     /*
       型の派生元
-       Any型...scalaにおいて、全ての型•クラスの派生元となるクラス(JavaでいうObject型)
+       Any型...Scalaにおいて、全ての型•クラスの派生元となるクラス(JavaでいうObject型)
         AnyVal型...Any型の直下のクラスで、IntやDouble、UnitやBoolean、Charなどの値の元となるクラス(Javaでいうプリミティブ型)
         AnyRef型...Any型の直下のクラスで、AnyVal型以外の全ての型•クラス(ユーザー定義型含む)の元となるクラス(Javaでいう参照型)
 
