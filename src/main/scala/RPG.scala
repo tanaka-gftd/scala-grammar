@@ -142,11 +142,12 @@ class Hero(_hitPoint: Int, _attackDamage: Int) extends Creature(_hitPoint, _atta
   //逃げようとした際の処理
   def escape(monster: Monster): Boolean = {
 
-    //逃走が成功したかどうかを判定
+    //逃走が成功したかどうかを乱数で判定 逃走成功率は2/3
     //nextInt()...0から引数に指定した値未満の整数を返します。
-    val isEscaped = RPG.random.nextInt(2) == 1  //逃走成功率は50%
+    //contains(値)...引数として渡した値が、コレクション(Seq,Set,Map)内に要素として存在するかどうかを判定(存在すればtrue)
+    val isEscape = Seq(0,1).contains(RPG.random.nextInt(3))
 
-    if(!isEscaped){
+    if(!isEscape){
       //逃走失敗時の処理：ヒーローはダメージを受ける
       this.hitPoint = this.hitPoint - monster.attackDamage
     } else {
@@ -154,7 +155,8 @@ class Hero(_hitPoint: Int, _attackDamage: Int) extends Creature(_hitPoint, _atta
       monster.isAwayFromHero = true
     }
 
-    isEscaped
+    //逃走フラグ失敗を返す
+    isEscape  // 逃走成功時は、!escapeFailed
   }
 
   //オーバーライド...親クラスで定義されたメソッドを子クラスで再定義することで、子クラス上で親クラスのメソッドを上書きすること
