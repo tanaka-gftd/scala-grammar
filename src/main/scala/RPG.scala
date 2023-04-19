@@ -8,7 +8,7 @@ import java.util.Random
 object RPG extends App {
   val random = new Random  //乱数作成インスタンス作成 乱数は逃走判定と、モンスターの能力設定に利用する
   val monsterCount = 5  //出現モンスター数
-  val hero = new Hero(200, 30)  //ヒーロー作成
+  val hero = new Hero(400, 50)  //ヒーロー作成
   var monsters = for (i <- 1 to monsterCount)
     yield new Monster(random.nextInt(120), random.nextInt(120), false)  //モンスター作成
 
