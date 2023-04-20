@@ -7,9 +7,9 @@ import java.util.Random
 //ゲーム部分
 object RPG extends App {
   val random = new Random  //乱数作成インスタンス作成 乱数は逃走判定と、モンスターの能力設定に利用する
-  val monsterCount = 5  //出現モンスター数
-  val hero = new Hero(400, 50)  //ヒーロー作成
-  var monsters = for (i <- 1 to monsterCount)
+  private val monsterCount = 5  //出現モンスター数
+  private val hero = new Hero(300, 50)  //ヒーロー作成
+  private var monsters = for (i <- 1 to monsterCount)
     yield new Monster(random.nextInt(120), random.nextInt(120), false)  //モンスター作成
 
   //本コード起動時に表示されるメッセージ
@@ -20,10 +20,14 @@ object RPG extends App {
     s"""あなたは冒険中の${hero}であり、
        |${monsterCount}匹のモンスターが潜んでいる洞窟を抜けなければならない。
        |【ルール】:
-       |1を入力してEnterキーを押すと攻撃、それ以外を入力すると逃走となる。
-       |逃走成功確率は50%。逃走に失敗した場合はダメージをうける。
+       |1を入力してEnterキーを押すと攻撃、
+       |2を入力してEnterキーを押すと防御。ただし、防御の成功率は1/2。
+       |それ以外を入力すると逃走となる。
+       |逃走成功確率は2/3。逃走に失敗した場合はダメージをうける。
        |一度でもダメージを受けるとモンスターの体力と攻撃力が判明する。
-       |またモンスターを倒した場合、武器を奪いその攻撃力を得ることができる。
+       |倒したモンスターがいい武器を持っていたら、武器を奪いその攻撃力を得ることができる。
+       |なお防御成功時は被ダメージを半分にしつつ、体力を若干回復させるが、
+       |防御失敗時は回復できず、通常のダメージを受ける。
        |--------------------------------------------------
        |未知のモンスターが現れた。""".stripMargin
   )
@@ -40,16 +44,17 @@ object RPG extends App {
 
 
   //モンスターの残り数が一匹以上いた場合、while内の処理を繰り返す
+  //nonEmpty...中身があるかどうかを判定(中身があればtrue 中身がなければfalse)
   //各モンスターのデータはVectorで保持されている
   //Vector...Seqの一種でランダムアクセスと更新が得意(immutable) JavaにおけるArrayList風味  継承ルート:Seq > IndexSeq > Vector
-  while(!monsters.isEmpty){
+  while(monsters.nonEmpty){
 
     //戦う相手として、monsters(Vector)の先頭のデータを抽出
     val monster = monsters.head
 
     //scala.io.StdIn.readLine...Scalaで1行読み込む標準入力
     //readLine()に引数として文字列を渡すと、その文字列がコンソールに表示される(この場合入力されるのは、表示された文字列以降の文字)
-    val input = scala.io.StdIn.readLine("【選択】: 攻撃[1] or 逃走[0] >")
+    val input = scala.io.StdIn.readLine("【選択】: 攻撃[1] or 防御[2] or 逃走[それ以外] >")
 
     //標準入力で入力された内容で、分岐する
     //攻撃or逃走処理の結果をコンソールに表示する
@@ -57,6 +62,16 @@ object RPG extends App {
       //攻撃
       hero.attack(monster)  //heroクラスのattackメソッド呼び出し
       println(s"あなたは${hero.attackDamage}のダメージを与え、${monster.attackDamage}のダメージを受けた。")
+    } else if(input == "2"){
+      if(hero.defense(monster)){
+        println(
+          s"""あなたは、防御に成功した。
+            |体力が少し回復した。
+            |モンスターから${monster.attackDamage/2}のダメージを受けた。""".stripMargin
+        )
+      } else {
+        println(s"あなたは、防御に失敗し、${monster.attackDamage}のダメージを受けた。")
+      }
     } else {
       //逃走
       if(hero.escape(monster)){  //heroクラスのescapeメソッド呼び出し
@@ -67,7 +82,7 @@ object RPG extends App {
     }
 
     //攻撃後or逃走後、現在のヒーローやモンスターの状態を表示
-    println(s"【現在の状態】: ${hero}, ${monster}")
+    println(s"【現在の状態】: $hero, $monster")
 
     //ヒーローの体力に応じて分岐
     if(!hero.isAlive){
@@ -81,11 +96,14 @@ object RPG extends App {
     } else if (!monster.isAlive || monster.isAwayFromHero) {
       //モンスターを倒した or モンスターから逃走成功した場合の処理
 
-      //モンスターを倒せたら、ヒーローの攻撃力をモンスターの攻撃力で上書きする(より強い武器をモンスターから奪う、みたいな感じ)
+      //モンスターを倒したら、ヒーローの攻撃力をモンスターの攻撃力で上書きする(より強い武器をモンスターから奪う、みたいな感じ)
       //(モンスターの攻撃力の方が低い場合は、上書きしない 弱い武器は不要という感じ)
       if(!monster.isAwayFromHero) {
-        println("モンスターは倒れた。そしてあなたは、モンスターの武器を奪った。")
-        if(monster.attackDamage > hero.attackDamage) hero.attackDamage = monster.attackDamage
+        println("モンスターを倒した。")
+        if(monster.attackDamage > hero.attackDamage) {
+          println("そしてあなたは、モンスターの武器を奪った。")
+          hero.attackDamage = monster.attackDamage
+        }
       }
 
       //モンスターのデータを保存しているVectorから、倒したモンスターのデータを除外する
@@ -95,7 +113,7 @@ object RPG extends App {
       println(s"残りのモンスターは${monsters.length}匹となった。")
 
       //残りモンスターが1匹以上いた場合、次のメッセージを表示する(そして、while句の最初に戻る)
-      if(monsters.length > 0){
+      if(monsters.nonEmpty){
         println(
           """----------------------------------------------
             |新たな未知のモンスターがあらわれた。""".stripMargin)
@@ -107,7 +125,7 @@ object RPG extends App {
   println(
     s"""
        |【ゲームクリア】: あなたは困難を乗り越えた。新たな冒険に祝福を。
-       |【結果】: ${hero}""".stripMargin
+       |【結果】: $hero""".stripMargin
   )
   System.exit(0)  //ゲーム終了
 }
@@ -132,6 +150,9 @@ abstract class Creature(var hitPoint: Int, var attackDamage: Int){
 //各コンストラクタの引数名に_を付けているのは、Creatureクラスで宣言された変数名との衝突を防ぐため
 class Hero(_hitPoint: Int, _attackDamage: Int) extends Creature(_hitPoint, _attackDamage) {
 
+  //ヒーローの初期体力を、最大体力として保持
+  private val maxHitPoint = this.hitPoint
+
   //ヒーローが攻撃した時と、モンスターから攻撃を受けた時のダメージ処理
   //モンスターの体力とヒーローの体力に、お互いの攻撃力分減らしたものを再代入している
   def attack(monster: Monster): Unit = {
@@ -155,8 +176,33 @@ class Hero(_hitPoint: Int, _attackDamage: Int) extends Creature(_hitPoint, _atta
       monster.isAwayFromHero = true
     }
 
-    //逃走フラグ失敗を返す
-    isEscape  // 逃走成功時は、!escapeFailed
+    //逃走フラグを返す
+    isEscape  //逃走成功時はtrue
+  }
+
+  //防御時の処理
+  def defense(monster: Monster): Boolean = {
+
+    val isDefense = RPG.random.nextInt(2) == 0  // 防御の成功率は1/2
+    val recoveryPoint = RPG.random.nextInt(31) + 60  //回復量は60~90の範囲内からランダム
+
+    if(!isDefense){
+      //防御失敗時の処理：ヒーローはダメージを受ける
+      this.hitPoint = this.hitPoint - monster.attackDamage
+    } else {
+      //防御成功時の処理：ヒーローは自身の体力を回復、その後モンスターから攻撃(ダメージは通常の半分)を受ける
+      //回復時は最大体力を超えないようする
+      if (this.maxHitPoint >= this.hitPoint + recoveryPoint) {
+        this.hitPoint = this.hitPoint + recoveryPoint
+      } else {
+        this.hitPoint = this.maxHitPoint
+      }
+      //防御成功時は受けるダメージ半分
+      this.hitPoint = this.hitPoint - monster.attackDamage / 2
+    }
+
+    //防御フラグを返す
+    isDefense  //防御成功時はtrue
   }
 
   //オーバーライド...親クラスで定義されたメソッドを子クラスで再定義することで、子クラス上で親クラスのメソッドを上書きすること
@@ -170,9 +216,9 @@ class Hero(_hitPoint: Int, _attackDamage: Int) extends Creature(_hitPoint, _atta
       println関数などでコンソールに出力した際、文字列として表示するための関数で、
 
     println(クラス名)で実行すると、デフォルトでは {クラス名}@{ハッシュで示されるID} が表示される
-    {クラス名}@{ハッシュで示されるID}と表示される部分を、Hero(体力:${hitPoint}, 攻撃力${attackDamage}) と表示されるようオーバーライド
+    {クラス名}@{ハッシュで示されるID}と表示される部分を、Hero(体力:$hitPoint, 攻撃力:$attackDamage) と表示されるようオーバーライド
   */
-  override def toString = s"Hero(体力:${hitPoint}, 攻撃力:${attackDamage})"  //toStringの定義元は遠い親クラス
+  override def toString = s"Hero(体力:$hitPoint, 攻撃力:$attackDamage)"  //toStringの定義元は遠い親クラス
 }
 
 
@@ -182,6 +228,6 @@ class Hero(_hitPoint: Int, _attackDamage: Int) extends Creature(_hitPoint, _atta
 //isAwayFromHero...モンスターから逃げるのに成功した時にtrueとなる変数
 class Monster(_hitPoint: Int, _attackDamage: Int, var isAwayFromHero: Boolean)
   extends Creature(_hitPoint, _attackDamage){
-  override def toString = s"Monster(体力:${hitPoint}, 攻撃力:${attackDamage}, ヒーローから離れている:${isAwayFromHero})"
+  override def toString = s"Monster(体力:$hitPoint, 攻撃力:$attackDamage, ヒーローから離れている:$isAwayFromHero)"
 }
 
