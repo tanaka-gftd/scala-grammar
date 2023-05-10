@@ -6,14 +6,20 @@ package jp.co.dwango.marubatsu.board
   cellsという(Int,Int)で行と列を指定してセルの状態を受け取れるMapと、
   次に置くべきCellStateのnextを所有している。
 */
-class Board(val cells: Map[(Int, Int), CellState], val next: CellState){
+/*
+  board パッケージにあるインタフェースは、
+  marubatsuパッケージ内からしかアクセスできないよう、
+  アクセス修飾子として、private[marubatsu]を付与しておく
+*/
+private[marubatsu] class Board(private[marubatsu] val cells: Map[(Int, Int), CellState],
+                               private[marubatsu] val next: CellState) {
 
   /*
     ボードの状態を更新(正確には、内容を変えた新しいボードを作成する)メソッド
     cellsの状態とnextを更新した、新しいBoardを作成＆取得する。
     ここで利用されているgetNextメソッドは、下で定義されている。
   */
-  def put(row: Int, column: Int): Board = {
+  private[marubatsu] def put(row: Int, column: Int): Board = {
     new Board(cells + ((row, column) -> next), getNext(next))
   }
 
