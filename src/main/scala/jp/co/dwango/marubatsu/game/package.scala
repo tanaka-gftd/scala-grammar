@@ -19,7 +19,9 @@ import jp.co.dwango.marubatsu.board.{CellState, Empty, Maru => MaruState, Batsu 
 
 //別パッケージのクラスを、本パッケージのクラスと対応付ける
 package object game {
-  def toWinner(cellState: CellState): Winner = cellState match {
+
+  //同一パッケージからしかアクセスできないよう、アクセス修飾子を付与
+  private[game] def toWinner(cellState: CellState): Winner = cellState match {
     /*
     case board.Maru => game.Maru
     case board.Batsu => game.Batsu
